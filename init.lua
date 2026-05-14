@@ -96,7 +96,7 @@ do
   -- See `:help mapleader`
   --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
   vim.g.mapleader = ' '
-  vim.g.maplocalleader = ' '
+  vim.g.maplocalleader = ','
 
   -- Set to true if you have a Nerd Font installed and selected in the terminal
   vim.g.have_nerd_font = false
@@ -107,10 +107,10 @@ do
   --  For more options, you can see `:help option-list`
 
   -- Make line numbers default
-  vim.o.number = true
+  vim.o.number = true 
   -- You can also add relative line numbers, to help with jumping.
   --  Experiment for yourself to see if you like it!
-  -- vim.o.relativenumber = true
+ vim.o.relativenumber = true
 
   -- Enable mouse mode, can be useful for resizing splits for example!
   vim.o.mouse = 'a'
@@ -174,11 +174,22 @@ do
 
   -- [[ Basic Keymaps ]]
   --  See `:help vim.keymap.set()`
-
-  -- Clear highlights on search when pressing <Esc> in normal mode
+vim.keymap.set('i', 'jk', '<Esc>')
+vim.keymap.set('n', 'zx', '<cmd>write<CR>')
+vim.keymap.set('n', 'zq', '<cmd>quit<CR>')
+vim.keymap.set('n', '<Shift>l', '<cmd>bnext<CR>')
+vim.keymap.set('n', '<Shift>h', '<cmd>bprevious<CR>')
+vim.keymap.set('n', '<Space>E', '<cmd>Neotree toggle<CR>')
+  -- Clear highlights on search when pressing <lEscl> in normal mode
   --  See `:help hlsearch`
-  vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+
+ -- yank snippets 
+vim.keymap.set('v', '<Tab>', 
+    [[<Esc><cmd>lua require("luasnip.util.select").pre_yank("z")<Cr>gv"zs<cmd>lua require("luasnip.util.select").post_yank("z")<Cr>]],
+  { desc = 'grab snippet' })
+  
   -- Diagnostic Config & Keymaps
   --  See `:help vim.diagnostic.Opts`
   vim.diagnostic.config {
@@ -409,7 +420,7 @@ do
   -- Examples:
   --  - va)  - [V]isually select [A]round [)]paren
   --  - yiiq - [Y]ank [I]nside [I]+1 [Q]uote
-  --  - ci'  - [C]hange [I]nside [']quote
+  --  - ci'  -[C]hange [I]nside [']quote
   require('mini.ai').setup {
     -- NOTE: Avoid conflicts with the built-in incremental selection mappings on Neovim>=0.12 (see `:help treesitter-incremental-selection`)
     mappings = {
@@ -421,7 +432,7 @@ do
 
   -- Add/delete/replace surroundings (brackets, quotes, etc.)
   --
-  -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
+ -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
   -- - sd'   - [S]urround [D]elete [']quotes
   -- - sr)'  - [S]urround [R]eplace [)] [']
   require('mini.surround').setup()
@@ -488,11 +499,11 @@ do
     -- You can put your default mappings / updates / etc. in here
     --  All the info you're looking for is in `:help telescope.setup()`
     --
-    -- defaults = {
-    --   mappings = {
-    --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-    --   },
-    -- },
+    defaults = {
+       mappings = {
+         i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+       },
+     },
     -- pickers = {}
     extensions = {
       ['ui-select'] = { require('telescope.themes').get_dropdown() },
@@ -818,10 +829,20 @@ do
   --    See the README about individual language/framework/plugin snippets:
   --    https://github.com/rafamadriz/friendly-snippets
   --
-  -- vim.pack.add { gh 'rafamadriz/friendly-snippets' }
-  -- require('luasnip.loaders.from_vscode').lazy_load()
+  vim.pack.add { gh 'rafamadriz/friendly-snippets' }
+  require('luasnip.loaders.from_vscode').lazy_load({
+    include = {'python', 'rust', 'lua', 'bash', 'markdown', 'c', 'cpp'},
+  })
 
+ require('luasnip.loaders.from_snipmate').lazy_load({
+    paths = { vim.fs.joinpath(vim.fn.stdpath('config'), 'snippets')},
+  })
+
+require('luasnip.loaders.from_lua').lazy_load({
+    paths = { vim.fs.joinpath(vim.fn.stdpath('config'), 'lua', 'lua', 'custom', 'snippets')},
+  })
   -- [[ Autocomplete Engine ]]
+
   vim.pack.add { { src = gh 'saghen/blink.cmp', version = vim.version.range '1.*' } }
   require('blink.cmp').setup {
     keymap = {
@@ -847,7 +868,7 @@ do
       --
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
       preset = 'default',
-
+      
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
     },
@@ -898,7 +919,7 @@ do
   vim.pack.add { { src = gh 'nvim-treesitter/nvim-treesitter', version = 'main' } }
 
   -- Ensure basic parsers are installed
-  local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+  local parsers = { 'bash', 'c', 'rust','python', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
   require('nvim-treesitter').install(parsers)
 
   ---@param buf integer
@@ -960,12 +981,12 @@ do
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug'
-  -- require 'kickstart.plugins.indent_line'
-  -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
-  -- require 'kickstart.plugins.neo-tree'
-  -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
+  require 'kickstart.plugins.debug'
+  require 'kickstart.plugins.indent_line'
+  require 'kickstart.plugins.lint'
+  require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.neo-tree'
+  require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --
@@ -974,4 +995,5 @@ do
 end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
+--
 -- vim: ts=2 sts=2 sw=2 et
